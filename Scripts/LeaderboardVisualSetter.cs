@@ -23,15 +23,21 @@ namespace CyberBuggy.Leaderboards
 
         private void OnEnable()
         {
+            _leaderboardManager.LeaderboardUpdated += OnLeaderboardUpdated;
             Download();
         }
-
+        private void OnDisable()
+        {
+            _leaderboardManager.LeaderboardUpdated -= OnLeaderboardUpdated;
+        }
         public void ShowNextPage()
         {
             if(_isDownloading)
                 return;
             
             _pageIndex = (_pageIndex += 1) % _pageAmount;
+
+            _isDownloading = true;
             Download();
         }
         public void ShowPreviousPage()
@@ -43,16 +49,13 @@ namespace CyberBuggy.Leaderboards
             if(_pageIndex < 0)
                 _pageIndex = _pageAmount - 1;
             
+            _isDownloading = true;
             Download();
         }
 
         private void Download()
         {
-            LeaderboardDownloading?.Invoke();
-            _isDownloading = true;
-
             _leaderboardManager.DownloadScores();
-            _leaderboardManager.LeaderboardUpdated += OnLeaderboardUpdated;
         }
         private void SetScoreReferences(DreamloLeaderboard leaderboard)
         {
@@ -102,6 +105,8 @@ namespace CyberBuggy.Leaderboards
 
         private void OnLeaderboardUpdated(DreamloLeaderboard leaderboard)
         {
+            LeaderboardDownloading?.Invoke();
+            _isDownloading = true;
             StartCoroutine(Co_OnLeaderboardUpdated(_requestDelay, leaderboard));
         }
         private IEnumerator Co_OnLeaderboardUpdated(float seconds, DreamloLeaderboard leaderboard)
@@ -110,7 +115,6 @@ namespace CyberBuggy.Leaderboards
             
             LeaderboardDownloaded?.Invoke();
             _isDownloading = false;
-            _leaderboardManager.LeaderboardUpdated -= OnLeaderboardUpdated;
 
             SetListPage(leaderboard);
             SetScoreReferences(leaderboard);
