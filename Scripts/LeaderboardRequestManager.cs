@@ -39,7 +39,10 @@ namespace CyberBuggy.Leaderboards
             yield return webRequest;
 
             if(string.IsNullOrEmpty(webRequest.error))
-                Debug.Log($"Upload Successful at ({fullUrl})!");
+            {
+                Debug.Log($"Upload Successful at ({fullUrl})! \n Data: {webRequest.text}");
+                DownloadScores();
+            }
             else
                 Debug.Log("Upload Error! \n" + webRequest.error);
         }
